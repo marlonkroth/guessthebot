@@ -163,7 +163,9 @@ async def on_message(message: discord.Message):
         return
 
     result = parse_guessthegame(message.content)
+    print(f'[DEBUG] raw_content={repr(message.content[:200])}')
     print(f'[DEBUG] parse_result={result} competition_active={is_competition_active()}')
+
 
 
     if not is_competition_active():
