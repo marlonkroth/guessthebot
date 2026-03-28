@@ -37,11 +37,20 @@ def parse_guessthegame(content: str) -> tuple[int, int] | None:
     Extrai (número_do_jogo, pontuação) de um resultado do GuessTheGame.
     Retorna None se a mensagem não for um resultado válido.
     """
-    match = re.search(r'#GuessTheGame\s+#(\d+)', content, re.IGNORECASE)
-    if not match:
+    # Verifica se é um resultado do GuessTheGame
+    if not re.search(r'#GuessTheGame', content, re.IGNORECASE):
         return None
 
-    game_number = int(match.group(1))
+    # Extrai o número do jogo — tenta vários formatos
+    num_match = (
+        re.search(r'#GuessTheGame\s*#?\s*(\d+)', content, re.IGNORECASE)  # #GuessTheGame #1414
+        or re.search(r'guessthe\.game/p/(\d+)', content, re.IGNORECASE)    # URL fallback
+        or re.search(r'#(\d+)', content)                                    # qualquer #número
+    )
+    if not num_match:
+        return None
+
+    game_number = int(num_match.group(1))
 
     GREEN = '🟩'
     WRONG_CHARS = {'🟥', '🟨'}
@@ -62,6 +71,7 @@ def parse_guessthegame(content: str) -> tuple[int, int] | None:
     wrong_before = sequence.index('green')
     score = max(1, 6 - wrong_before)
     return (game_number, score)
+
 
 
 def week_start_str() -> str:
