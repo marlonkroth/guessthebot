@@ -6,6 +6,9 @@ import pytz
 SAO_PAULO_TZ = pytz.timezone('America/Sao_Paulo')
 DB_FILE = os.getenv('DB_FILE', 'guessthebot.db')
 
+# Garante que o diretório pai existe (necessário para /data no Railway)
+os.makedirs(os.path.dirname(DB_FILE), exist_ok=True) if os.path.dirname(DB_FILE) else None
+
 
 def get_conn():
     conn = sqlite3.connect(DB_FILE)
