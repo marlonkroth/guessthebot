@@ -36,25 +36,34 @@ def parse_guessthegame(content: str) -> tuple[int, int] | None:
     """
     Extrai (número_do_jogo, pontuação) de um resultado do GuessTheGame.
     Retorna None se a mensagem não for um resultado válido.
+
+    Nota: o Discord converte #GuessTheGame em menção de canal (<#id>),
+    então usamos #GameNavigator ou a URL como identificadores confiáveis.
     """
-    # Verifica se é um resultado do GuessTheGame
-    if not re.search(r'#GuessTheGame', content, re.IGNORECASE):
+    GREEN = '🟩'
+    WRONG_CHARS = {'🟥', '🟨'}
+
+    # 1. Verifica se parece um resultado do GuessTheGame
+    is_guessthegame = bool(
+        re.search(r'#GuessTheGame', content, re.IGNORECASE)
+        or re.search(r'guessthe\.game', content, re.IGNORECASE)
+        or re.search(r'#GameNavigator', content, re.IGNORECASE)
+    )
+    if not is_guessthegame:
         return None
 
-    # Extrai o número do jogo — tenta vários formatos
+    # 2. Extrai número do jogo (URL é mais confiável)
     num_match = (
-        re.search(r'#GuessTheGame\s*#?\s*(\d+)', content, re.IGNORECASE)  # #GuessTheGame #1414
-        or re.search(r'guessthe\.game/p/(\d+)', content, re.IGNORECASE)    # URL fallback
-        or re.search(r'#(\d+)', content)                                    # qualquer #número
+        re.search(r'guessthe\.game/p/(\d+)', content, re.IGNORECASE)
+        or re.search(r'#GuessTheGame\s*#?\s*(\d+)', content, re.IGNORECASE)
+        or re.search(r'(?:^|[\s>])#(\d+)', content)
     )
     if not num_match:
         return None
 
     game_number = int(num_match.group(1))
 
-    GREEN = '🟩'
-    WRONG_CHARS = {'🟥', '🟨'}
-
+    # 3. Lê a sequência de emojis
     sequence = []
     for ch in content:
         if ch == GREEN:
@@ -71,6 +80,7 @@ def parse_guessthegame(content: str) -> tuple[int, int] | None:
     wrong_before = sequence.index('green')
     score = max(1, 6 - wrong_before)
     return (game_number, score)
+
 
 
 
