@@ -147,10 +147,14 @@ async def on_message(message: discord.Message):
 
     # ── Monitoramento do canal ──────────────────────────────────────────────
     channel_id = db.get_channel(guild_id)
+    print(f'[DEBUG] guild={guild_id} channel_atual={message.channel.id} channel_config={channel_id}')
     if not channel_id or str(message.channel.id) != channel_id:
+        print(f'[DEBUG] canal ignorado')
         return
 
     result = parse_guessthegame(message.content)
+    print(f'[DEBUG] parse_result={result} competition_active={is_competition_active()}')
+
 
     if not is_competition_active():
         if result is not None:
